@@ -82,6 +82,7 @@ class GeneticAlgorithm:
     def run(self, num_generations):
         curr_population = self.gen_population()
         self.best_outputs = []
+        self.avg_fitness = []
         overall_min_fitness = 999999
         start_time = time.time()
         for generation in range(num_generations):
@@ -93,7 +94,7 @@ class GeneticAlgorithm:
             overall_min_fitness = min(min_fitness, overall_min_fitness)
             print(f"Best result in current iteration {min_fitness} compared to overall {overall_min_fitness}")
             self.best_outputs.append(min_fitness)
-            
+            self.avg_fitness.append(np.average(fitness))
             # Selecting the best parents in the population for mating.
             parents = self.select_deterministic(curr_population, self.n_mating)
             offspring = self.crossover(parents)
