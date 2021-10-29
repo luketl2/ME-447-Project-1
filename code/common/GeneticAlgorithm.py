@@ -1,10 +1,7 @@
 import numpy as np
 import time
+from matplotlib import pyplot as plt
 
-from numpy.lib.function_base import select 
-
-def default_individual_constraint(pop):
-    return 
 class GeneticAlgorithm:
     def __init__(self, param_size: int, pop_size: int, low_bound: int, high_bound: int,
                 fitness_func, constraint_func, discrete=False):
@@ -23,7 +20,9 @@ class GeneticAlgorithm:
         self.mutation_delta = 0.5
         
         self.best_solution = np.array([])
-        self.best_outputs = []
+        self.best_cur_fitness = []
+        self.best_overall = []
+        self.avg_cur_fitness = []
         self.runtime = -1
 
     def create_random_pop(self, num_indivuals):
@@ -32,10 +31,6 @@ class GeneticAlgorithm:
             high = self.initial_high_bound, 
             size=(num_indivuals, self.param_size))
         if self.discrete:
-            mu = 0.0 # mean
-            sigma = 0.3 # st. dev, spread
-            # population = np.random.normal(loc = mu, scale=sigma, size = (num_indivuals, self.param_size))
-            
             population = np.round(population)
         assert population.shape == (num_indivuals, self.param_size)
         return population
@@ -110,7 +105,6 @@ class GeneticAlgorithm:
     
     def environmental_selection(self, curr_population, offspring):
         offspring = self.environmental_constraint(offspring)
-        print(f"Offspring: {offspring}")
         t_total_pop = np.vstack((curr_population, offspring))
         new_pop = self.select_deterministic(t_total_pop, self.pop_size)
         assert new_pop.shape == (self.pop_size, self.param_size)
@@ -118,8 +112,6 @@ class GeneticAlgorithm:
 
     def run(self, num_generations):
         curr_population = self.gen_population()
-        self.best_outputs = []
-        self.avg_fitness = []
         overall_min_fitness = 999999
         start_time = time.time()
         for generation in range(num_generations):
@@ -130,8 +122,9 @@ class GeneticAlgorithm:
 
             overall_min_fitness = min(min_fitness, overall_min_fitness)
             print(f"Best result in current iteration {min_fitness} compared to overall {overall_min_fitness}")
-            self.best_outputs.append(min_fitness)
-            self.avg_fitness.append(np.average(fitness))
+            self.best_cur_fitness.append(min_fitness)
+            self.best_overall.append(overall_min_fitness)
+            self.avg_cur_fitness.append(np.average(fitness))
             # Selecting the best parents in the population for mating.
             parents = self.select_deterministic(curr_population, self.n_mating)
             offspring = self.crossover(parents)
@@ -143,7 +136,36 @@ class GeneticAlgorithm:
         # Then return the index of that solution corresponding to the best fitness.
         min_idx = np.argmin(fitness)
         self.best_solution = curr_population[min_idx]
+        print("Final Population Fitness: ", fitness)
         print("Best solution : ", curr_population[min_idx])
         print("Best solution fitness : ", fitness[min_idx])
         end_time = time.time()
         self.runtime = end_time-start_time
+        print(f"Runtime: {self.runtime}")
+
+    def plot_knapsack(self, title):
+        plt.plot([-i for i in self.best_cur_fitness], label="Best Fitness in Generation")
+        plt.plot([-i for i in self.best_overall], label="Best Overall Fitness")
+        plt.plot([-i for i in self.avg_cur_fitness], label="Mean Generation Fitness")
+        plt.xlabel("Generation #")
+        plt.ylabel("Fitness Value")
+        plt.title(f"{title} Fitness over Generations")
+        plt.legend()
+        plt.show()
+
+    def plot_best_fitness(self, title):
+        plt.plot(self.best_cur_fitness, label="Best Fitness in Generation")
+        plt.plot(self.best_overall, label="Best Overall Fitness")
+        plt.xlabel("Generation #")
+        plt.ylabel("Fitness Value")
+        plt.title(f"{title} Fitness over Generations")
+        plt.legend()
+        plt.show()
+
+    def plot_mean_fitness(self, title):
+        plt.plot(self.avg_cur_fitness, label="Mean Generation Fitness")
+        plt.xlabel("Generation #")
+        plt.ylabel("Fitness Value")
+        plt.title(f"{title} Fitness over Generations")
+        plt.legend()
+        plt.show()
