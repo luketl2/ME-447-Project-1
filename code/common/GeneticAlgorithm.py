@@ -1,3 +1,8 @@
+"""
+Genetic algorithm Class
+Bhargav Chandaka and Luke LaLonde
+"""
+
 import numpy as np
 import time
 from matplotlib import pyplot as plt

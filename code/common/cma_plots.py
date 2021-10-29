@@ -1,3 +1,7 @@
+"""
+CMA Plot Functions (Copied from class solutions)
+Bhargav Chandaka and Luke LaLonde
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
